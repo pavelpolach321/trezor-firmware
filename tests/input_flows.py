@@ -853,15 +853,15 @@ class InputFlowSignTxInformationReplacement(InputFlowBase):
         yield  # confirm txid
         self.debug.press_right()
         self.debug.press_right()
-        yield  # confirm address
+        yield  # modify amount - address
+        self.debug.press_right()
+        self.debug.press_right()
+        yield  # modify amount - amount
+        self.debug.press_right()
+        yield  # modify fee
         self.debug.press_right()
         self.debug.press_right()
         self.debug.press_right()
-        yield  # confirm amount
-        self.debug.press_right()
-        self.debug.press_right()
-        self.debug.press_right()
-        yield
 
     def input_flow_t3t1(self) -> BRGeneratorType:
         yield  # confirm txid
