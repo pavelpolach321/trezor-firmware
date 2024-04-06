@@ -863,22 +863,7 @@ class InputFlowSignTxInformationReplacement(InputFlowBase):
         self.debug.press_right()
         self.debug.press_right()
 
-    def input_flow_t3t1(self) -> BRGeneratorType:
-        yield  # confirm txid
-        self.debug.press_yes()
-        yield  # confirm address
-        self.debug.press_yes()
-        # go back to address
-        self.debug.press_no()
-        # confirm address
-        self.debug.press_yes()
-        yield  # confirm amount
-        self.debug.press_yes()
-
-        yield  # transaction summary, press info
-        self.debug.click(buttons.CORNER_BUTTON)
-        self.debug.click(buttons.CORNER_BUTTON)
-        self.debug.press_yes()
+    input_flow_t3t1 = input_flow_tt
 
 
 def lock_time_input_flow_tt(
@@ -1283,30 +1268,7 @@ class InputFlowSlip39BasicBackup(InputFlowBase):
         assert br.code == B.Success
         self.debug.press_yes()
 
-    def input_flow_t3t1(self) -> BRGeneratorType:
-        yield  # 1. Checklist
-        self.debug.press_yes()
-        if self.click_info:
-            yield from click_info_button_tt(self.debug)
-        yield  # 2. Number of shares (5)
-        self.debug.press_yes()
-        yield  # 3. Checklist
-        self.debug.press_yes()
-        if self.click_info:
-            yield from click_info_button_tt(self.debug)
-        yield  # 4. Threshold (3)
-        self.debug.press_yes()
-        yield  # 5. Checklist
-        self.debug.press_yes()
-        yield  # 6. Confirm show seeds
-        self.debug.press_yes()
-
-        # Mnemonic phrases
-        self.mnemonics = yield from load_5_shares(self.debug)
-
-        br = yield  # Confirm backup
-        assert br.code == B.Success
-        self.debug.press_yes()
+    input_flow_t3t1 = input_flow_tt
 
 
 class InputFlowSlip39BasicResetRecovery(InputFlowBase):
@@ -1468,39 +1430,7 @@ class InputFlowSlip39AdvancedBackup(InputFlowBase):
         assert br.code == B.Success
         self.debug.press_yes()
 
-    def input_flow_t3t1(self) -> BRGeneratorType:
-        yield  # 1. Checklist
-        self.debug.press_yes()
-        if self.click_info:
-            yield from click_info_button_tt(self.debug)
-        yield  # 2. Set and confirm group count
-        self.debug.press_yes()
-        yield  # 3. Checklist
-        self.debug.press_yes()
-        if self.click_info:
-            yield from click_info_button_tt(self.debug)
-        yield  # 4. Set and confirm group threshold
-        self.debug.press_yes()
-        yield  # 5. Checklist
-        self.debug.press_yes()
-        for _ in range(5):  # for each of 5 groups
-            if self.click_info:
-                yield from click_info_button_tt(self.debug)
-            yield  # Set & Confirm number of shares
-            self.debug.press_yes()
-            if self.click_info:
-                yield from click_info_button_tt(self.debug)
-            yield  # Set & confirm share threshold value
-            self.debug.press_yes()
-        yield  # Confirm show seeds
-        self.debug.press_yes()
-
-        # Mnemonic phrases - show & confirm shares for all groups
-        self.mnemonics = yield from load_5_groups_5_shares(self.debug)
-
-        br = yield  # Confirm backup
-        assert br.code == B.Success
-        self.debug.press_yes()
+    input_flow_t3t1 = input_flow_tt
 
 
 class InputFlowSlip39AdvancedResetRecovery(InputFlowBase):
