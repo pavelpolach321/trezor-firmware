@@ -310,7 +310,7 @@ class EthereumFlow:
         go_back_from_summary: bool = False,
     ) -> BRGeneratorType:
         yield
-        TR.assert_equals(self.debug.wait_layout().title(), "words__recipient")
+        TR.assert_equals(self.debug.wait_layout().title(), "words__title_recipient")
 
         if self.client.model in (models.T2T1, models.T3T1):
             if cancel:
@@ -374,9 +374,9 @@ class EthereumFlow:
         TR.assert_equals_multiple(
             self.debug.wait_layout().title(),
             [
-                "ethereum__staking_stake",
-                "ethereum__staking_unstake",
-                "ethereum__staking_claim",
+                "ethereum__staking_title_stake",
+                "ethereum__staking_title_unstake",
+                "ethereum__staking_title_claim",
             ],
         )
         TR.assert_equals_multiple(
@@ -394,8 +394,8 @@ class EthereumFlow:
                 TR.assert_equals_multiple(
                     self.debug.wait_layout().title(),
                     [
-                        "ethereum__staking_stake_address",
-                        "ethereum__staking_claim_address",
+                        "ethereum__staking_title_stake_address",
+                        "ethereum__staking_title_claim_address",
                     ],
                 )
                 self.debug.press_no(wait=True)
@@ -421,8 +421,8 @@ class EthereumFlow:
                 TR.assert_equals_multiple(
                     self.debug.wait_layout().title(),
                     [
-                        "ethereum__staking_stake_address",
-                        "ethereum__staking_claim_address",
+                        "ethereum__staking_title_stake_address",
+                        "ethereum__staking_title_claim_address",
                     ],
                 )
                 self.debug.press_left(wait=True)

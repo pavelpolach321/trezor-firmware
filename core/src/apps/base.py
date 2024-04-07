@@ -304,7 +304,7 @@ async def handle_UnlockPath(msg: UnlockPath) -> protobuf.MessageType:
     else:
         await confirm_action(
             "confirm_coinjoin_access",
-            title="Coinjoin",
+            title="COINJOIN",
             description=TR.coinjoin__access_account,
             verb=TR.buttons__access,
         )

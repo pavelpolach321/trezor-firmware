@@ -293,6 +293,61 @@ class TranslationsBlob(Struct):
 # ====================
 
 
+def uppercase_titles_and_buttons(s: str, key: str, model_internal_name: str) -> str:
+    # strings used in titles and button labels are uppercased for model T and model R
+    MODELS_WITH_UPPER_TITLES_AND_BUTTONS = ("T2T1", "T2B1")
+    # KEY_SUBSTR_UPPER_MODELS_T_AND_R = ("_title", "_button", "buttons__", "inputs__")
+    KEY_SUBSTR_UPPER_MODELS_T_AND_R = (
+        "_title",
+        "_button",
+        "buttons__",
+        "inputs__",
+        # FIXME: below are strings which should contain '_title' or `_button`. This is just to test if it's sufficient
+        "stellar__confirm_issuer",
+        "stellar__confirm_stellar",
+        "stellar__confirm_issuer",
+        "stellar__revoke_trust",
+        "stellar__confirm_memo",
+        "nem__final_confirm",
+        "bitcoin__confirm_locktime",
+        "binance__confirm_cancel",
+        "binance__confirm_input",
+        "binance__confirm_order",
+        "binance__confirm_output",
+        "cardano__verify_script",
+        "cardano__sending",  # should include many cardano__...
+        # "progress__loading_transaction",
+        # "progress__signing_transaction",
+        "language__progress",
+        # FIXME: words might be used in multiple places, consider creating more versions, e.g. "words__title_amount", etc.
+        "words__amount",
+        "words__confirm",
+        "words__sign",
+        "words__warning",
+        "debug__loading_seed",
+        "passphrase__hidden_wallet",
+        "sd_card__error",
+        "sd_card__format_card",
+        "misc__decrypt_value",
+        "misc__encrypt_value",
+        "misc__title_suite_labeling",
+    )
+
+    KEY_SKIP = (
+        "debug__loading_seed_not_recommended",
+            )
+
+    should_upper: bool = (
+        model_internal_name in MODELS_WITH_UPPER_TITLES_AND_BUTTONS
+        and any(sub in key for sub in KEY_SUBSTR_UPPER_MODELS_T_AND_R)
+        and key not in KEY_SKIP
+    )
+    if should_upper:
+        return s.upper()
+    else:
+        return s
+
+
 def order_from_json(json_order: dict[str, str]) -> Order:
     return {int(k): v for k, v in json_order.items()}
 
@@ -306,10 +361,14 @@ def blob_from_defs(
 ) -> TranslationsBlob:
     json_header: JsonHeader = lang_data["header"]
 
-    # order translations -- python dicts keep insertion order
-    translations_ordered: list[str] = [
-        lang_data["translations"].get(key, "") for _, key in sorted(order.items())
-    ]
+    # order translations -- dicts keep insertion order as of Python 3.7
+    translations_ordered: list[str] = [] * len(order)
+    for _, key in sorted(order.items()):
+        translation: str = lang_data["translations"].get(key, "")
+        translation = uppercase_titles_and_buttons(
+            translation, key, model.internal_name
+        )
+        translations_ordered.append(translation)
 
     translations = TranslatedStrings.from_items(translations_ordered)
 

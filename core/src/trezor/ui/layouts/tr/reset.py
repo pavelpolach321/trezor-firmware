@@ -93,7 +93,7 @@ async def select_word(
         RustLayout(
             trezorui2.select_word(
                 title="",
-                description=TR.reset__select_word_template.format(word_ordinal),
+                description=TR.reset__select_word_title_template.format(word_ordinal),
                 words=(words[0].lower(), words[1].lower(), words[2].lower()),
             )
         )

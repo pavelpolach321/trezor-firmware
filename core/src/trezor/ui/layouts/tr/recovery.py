@@ -23,7 +23,7 @@ async def request_word(
 ) -> str:
     from trezor.wire.context import wait
 
-    prompt = TR.recovery__word_x_of_y_template.format(word_index + 1, word_count)
+    prompt = TR.recovery__word_x_of_y_title_template.format(word_index + 1, word_count)
 
     can_go_back = word_index > 0
 

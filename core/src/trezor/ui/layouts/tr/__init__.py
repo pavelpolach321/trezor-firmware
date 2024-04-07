@@ -403,7 +403,7 @@ def confirm_reset_device(
         interact(
             RustLayout(
                 trezorui2.confirm_reset_device(
-                    title=title.upper(),
+                    title=title,
                     button=button,
                 )
             ),
@@ -563,7 +563,7 @@ def show_pubkey(
     mismatch_title: str | None = None,
     br_type: str = "show_pubkey",
 ) -> Awaitable[None]:
-    title = title or TR.address__public_key  # def_arg
+    title = title or TR.address__title_public_key  # def_arg
     mismatch_title = mismatch_title or TR.addr_mismatch__key_mismatch  # def_arg
     return show_address(
         address=pubkey,
@@ -691,8 +691,8 @@ async def confirm_output(
     output_index: int | None = None,
     chunkify: bool = False,
 ) -> None:
-    title = title or TR.send__confirm_sending  # def_arg
-    address_title = TR.words__recipient
+    title = title or TR.send__title_sending_amount  # def_arg
+    address_title = TR.words__title_recipient
     if output_index is not None:
         address_title += f" #{output_index + 1}"
     amount_title = TR.words__amount
@@ -748,7 +748,7 @@ async def should_show_payment_request_details(
     memos_str = "\n".join(memos)
     await _placeholder_confirm(
         "confirm_payment_request",
-        TR.send__title_confirm_sending,
+        TR.send__title_sending_amount,
         description=f"{amount} to\n{recipient_name}\n{memos_str}",
         br_code=ButtonRequestType.ConfirmOutput,
     )
@@ -1107,7 +1107,7 @@ if not utils.BITCOIN_ONLY:
         )
 
         # confirmation
-        if verb == TR.ethereum__staking_claim:
+        if verb == TR.ethereum__staking_title_claim:
             amount_title = verb
             amount_value = ""
         else:
@@ -1183,7 +1183,7 @@ if not utils.BITCOIN_ONLY:
             # Allowing going back and forth between recipient and summary/details
             await confirm_blob(
                 br_type,
-                TR.words__recipient,
+                TR.words__title_recipient,
                 recipient,
                 verb=TR.buttons__continue,
                 chunkify=chunkify,
@@ -1365,7 +1365,7 @@ async def confirm_signverify(
     while True:
         await confirm_blob(
             br_type,
-            TR.sign_message__confirm_address,
+            TR.sign_message__title_confirm_address,
             address,
             verb=TR.buttons__continue,
             br_code=BR_TYPE_OTHER,
@@ -1374,7 +1374,7 @@ async def confirm_signverify(
         try:
             await confirm_blob(
                 br_type,
-                TR.sign_message__confirm_message,
+                TR.sign_message__title_confirm_message,
                 message,
                 verb_cancel="^",
                 br_code=BR_TYPE_OTHER,

@@ -58,13 +58,13 @@ async def require_confirm_stake(
     addr_str = address_from_bytes(addr_bytes, network)
     total_amount = format_ethereum_amount(value, None, network)
     await confirm_ethereum_staking_tx(
-        TR.ethereum__staking_stake,  # title
+        TR.ethereum__staking_title_stake,  # title
         TR.ethereum__staking_stake_intro,  # intro_question
-        TR.ethereum__staking_stake,  # verb
+        TR.ethereum__staking_title_stake,  # verb
         total_amount,  # total_amount
         maximum_fee,  # maximum_fee
         addr_str,  # address
-        TR.ethereum__staking_stake_address,  # address_title
+        TR.ethereum__staking_title_stake_address,  # address_title
         fee_info_items,  # info_items
         chunkify=chunkify,
     )
@@ -83,13 +83,13 @@ async def require_confirm_unstake(
     total_amount = format_ethereum_amount(value, None, network)
 
     await confirm_ethereum_staking_tx(
-        TR.ethereum__staking_unstake,  # title
+        TR.ethereum__staking_title_unstake,  # title
         TR.ethereum__staking_unstake_intro,  # intro_question
-        TR.ethereum__staking_unstake,  # verb
+        TR.ethereum__staking_title_unstake,  # verb
         total_amount,  # total_amount
         maximum_fee,  # maximum_fee
         addr_str,  # address
-        TR.ethereum__staking_stake_address,  # address_title
+        TR.ethereum__staking_title_stake_address,  # address_title
         fee_info_items,  # info_items
         chunkify=chunkify,
     )
@@ -105,13 +105,13 @@ async def require_confirm_claim(
 
     addr_str = address_from_bytes(addr_bytes, network)
     await confirm_ethereum_staking_tx(
-        TR.ethereum__staking_claim,  # title
+        TR.ethereum__staking_title_claim,  # title
         TR.ethereum__staking_claim_intro,  # intro_question
-        TR.ethereum__staking_claim,  # verb
+        TR.ethereum__staking_title_claim,  # verb
         "",  # total_amount
         maximum_fee,  # maximum_fee
         addr_str,  # address
-        TR.ethereum__staking_claim_address,  # address_title
+        TR.ethereum__staking_title_claim_address,  # address_title
         fee_info_items,  # info_items
         chunkify=chunkify,
     )

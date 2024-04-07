@@ -18,13 +18,13 @@ def _storage_message_to_str(message: config.StorageMessage | None) -> str | None
     if message == config.StorageMessage.NO_MSG:
         return ""
     if message == config.StorageMessage.VERIFYING_PIN_MSG:
-        return TR.storage_msg__verifying_pin
+        return TR.storage_msg__title_verifying_pin
     if message == config.StorageMessage.PROCESSING_MSG:
-        return TR.storage_msg__processing
+        return TR.storage_msg__title_processing
     if message == config.StorageMessage.STARTING_MSG:
-        return TR.storage_msg__starting
+        return TR.storage_msg__title_starting
     if message == config.StorageMessage.WRONG_PIN_MSG:
-        return TR.storage_msg__wrong_pin
+        return TR.storage_msg__title_wrong_pin
     raise RuntimeError  # unknown message
 
 
@@ -56,14 +56,13 @@ def progress(
     indeterminate: bool = False,
 ) -> ProgressLayout:
     if description is None:
-        description = TR.progress__please_wait  # def_arg
+        description = TR.progress__title_please_wait  # def_arg
 
-    if title is not None:
-        title = title.upper()
-    elif not utils.MODEL_IS_T2B1:
-        # on TT, uppercase the description which ends up on top of the screen
-        # when no title is set
-        description = description.upper()
+    # elif not utils.MODEL_IS_T2B1:
+    #     TODO: keep this?
+    #     # on TT, uppercase the description which ends up on top of the screen
+    #     # when no title is set
+    #     description = description.upper()
 
     return RustProgress(
         layout=trezorui2.show_progress(

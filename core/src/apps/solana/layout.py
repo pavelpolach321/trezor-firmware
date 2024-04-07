@@ -266,7 +266,7 @@ async def confirm_system_transfer(
     blockhash: bytes,
 ) -> None:
     await confirm_value(
-        title=TR.words__recipient,
+        title=TR.words__title_recipient,
         value=base58.encode(transfer_instruction.recipient_account[0]),
         description="",
         br_type="confirm_recipient",
@@ -295,7 +295,7 @@ async def confirm_token_transfer(
     blockhash: bytes,
 ):
     await confirm_value(
-        title=TR.words__recipient,
+        title=TR.words__title_recipient,
         value=base58.encode(destination_account),
         description="",
         br_type="confirm_recipient",

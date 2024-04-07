@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# script used to generate /embed/extmod/modtrezorui/font_*_*.c
+# script used to generate /embed/lib/fonts/font_*_*.c
 
 from __future__ import annotations
 
