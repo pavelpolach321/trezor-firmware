@@ -64,7 +64,7 @@ def image_to_t1(filename: Path) -> bytes:
             f"Image is not 128x64, but {image.size}. Do you want to resize it automatically?",
             default=True,
         ):
-            image = image.resize(T1_TR_IMAGE_SIZE, Image.ANTIALIAS)
+            image = image.resize(T1_TR_IMAGE_SIZE, Image.Resampling.LANCZOS)
         else:
             raise click.ClickException("Wrong size of the image - should be 128x64")
 
