@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Generator, Iterator
+from typing import TYPE_CHECKING, Generator, Iterator
 
 import pytest
 import xdist
