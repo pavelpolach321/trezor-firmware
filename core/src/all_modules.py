@@ -365,6 +365,8 @@ apps.misc.get_firmware_hash
 import apps.misc.get_firmware_hash
 apps.misc.sign_identity
 import apps.misc.sign_identity
+apps.thp
+import apps.thp
 apps.thp.credential_manager
 import apps.thp.credential_manager
 apps.workflow_handlers
