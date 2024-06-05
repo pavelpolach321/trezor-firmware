@@ -50,28 +50,7 @@ def issue_credential(
     Issue a pairing credential binded to the provided host static public key
     and credential metadata.
     """
-    return _issue_credential(
-        derive_cred_auth_key(), host_static_pubkey, credential_metadata
-    )
-
-
-def validate_credential(
-    encoded_pairing_credential_message: bytes,
-    host_static_pubkey: bytes,
-) -> bool:
-    """
-    Validate a pairing credential binded to the provided host static public key.
-    """
-    return _validate_credential(
-        derive_cred_auth_key(), encoded_pairing_credential_message, host_static_pubkey
-    )
-
-
-def _issue_credential(
-    cred_auth_key: bytes,
-    host_static_pubkey: bytes,
-    credential_metadata: ThpCredentialMetadata,
-) -> bytes:
+    cred_auth_key = derive_cred_auth_key()
     proto_msg = ThpAuthenticatedCredentialData(
         host_static_pubkey=host_static_pubkey,
         cred_metadata=credential_metadata,
@@ -84,11 +63,14 @@ def _issue_credential(
     return credential_raw
 
 
-def _validate_credential(
-    cred_auth_key: bytes,
+def validate_credential(
     encoded_pairing_credential_message: bytes,
     host_static_pubkey: bytes,
 ) -> bool:
+    """
+    Validate a pairing credential binded to the provided host static public key.
+    """
+    cred_auth_key = derive_cred_auth_key()
     expected_type = protobuf.type_for_name("ThpPairingCredential")
     credential = wrap_protobuf_load(encoded_pairing_credential_message, expected_type)
     assert ThpPairingCredential.is_type_of(credential)
