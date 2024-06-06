@@ -386,7 +386,7 @@ class Descriptor:
             if self.exclude_internal_only and self._get_extension(item,"internal_only",False):
                 return False
             return True
-        
+
         return [item for item in items if should_include(item)]
 
     def _get_extension(self, something, extension_name, default=None):
