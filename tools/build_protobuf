@@ -65,6 +65,6 @@ $func file core/src/trezor/messages.py "$CORE_PROTOBUF_SOURCES" --template=core/
 
 $func file python/src/trezorlib/messages.py "$PYTHON_PROTOBUF_SOURCES" \
     --template=python/src/trezorlib/_proto_messages.mako \
-    --include-deprecated
-
+    --include-deprecated \
+    --exclude-internal-only
 exit $RETURN

@@ -327,12 +327,13 @@ def find_by_name(haystack, name, default=None):
 
 
 class Descriptor:
-    def __init__(self, data, include_deprecated: bool, bitcoin_only: bool):
+    def __init__(self, data, include_deprecated: bool, bitcoin_only: bool, exclude_internal_only: bool):
         self.descriptor = descriptor_pb2.FileDescriptorSet()
         self.descriptor.ParseFromString(data)
 
         self.include_deprecated = include_deprecated
         self.bitcoin_only = bitcoin_only
+        self.exclude_internal_only = exclude_internal_only
         self.files = self.descriptor.file
 
         logging.debug(f"found {len(self.files)} files")
@@ -378,13 +379,15 @@ class Descriptor:
         for enum in self.enums:
             self.convert_enum_value_names(enum)
 
-    def _filter_items(self, iter):
-        return [
-            item
-            for item in iter
-            # exclude deprecated items unless specified
-            if (self.include_deprecated or not item.options.deprecated)
-        ]
+    def _filter_items(self, items):
+        def should_include(item)-> bool:
+            if not self.include_deprecated and item.options.deprecated:
+                return False
+            if self.exclude_internal_only and self._get_extension(item,"internal_only",False):
+                return False
+            return True
+        
+        return [item for item in items if should_include(item)]
 
     def _get_extension(self, something, extension_name, default=None):
         if something is None:
@@ -697,6 +700,7 @@ WritableDirectory = click.Path(exists=True, file_okay=False, writable=True)
 @click.option("-v", "--verbose", is_flag=True)
 @click.option("-d", "--include-deprecated", is_flag=True, help="Include deprecated fields, messages and enums")
 @click.option("-b", "--bitcoin-only", type=int, default=0, help="Exclude fields, messages and enums that do not belong to bitcoin_only builds")
+@click.option("--exclude-internal-only", is_flag=True, help="Exclude fields, messages and enums that are only for internal purposes")
 # fmt: on
 def main(
     proto,
@@ -710,6 +714,7 @@ def main(
     verbose,
     include_deprecated,
     bitcoin_only,
+    exclude_internal_only
 ):
     if verbose:
         logging.basicConfig(level=logging.DEBUG)
@@ -719,6 +724,7 @@ def main(
         descriptor_proto,
         include_deprecated=include_deprecated,
         bitcoin_only=bitcoin_only,
+        exclude_internal_only=exclude_internal_only
     )
 
     if python_outdir:
