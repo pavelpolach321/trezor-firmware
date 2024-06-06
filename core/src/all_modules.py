@@ -365,12 +365,14 @@ apps.misc.get_firmware_hash
 import apps.misc.get_firmware_hash
 apps.misc.sign_identity
 import apps.misc.sign_identity
-apps.thp
-import apps.thp
-apps.thp.credential_manager
-import apps.thp.credential_manager
 apps.workflow_handlers
 import apps.workflow_handlers
+
+if utils.USE_THP:
+    apps.thp
+    import apps.thp
+    apps.thp.credential_manager
+    import apps.thp.credential_manager
 
 if not utils.BITCOIN_ONLY:
     trezor.enums.BinanceOrderSide
@@ -775,7 +777,6 @@ if not utils.BITCOIN_ONLY:
     import apps.zcash.signer
     apps.zcash.unified_addresses
     import apps.zcash.unified_addresses
-
 # generate full alphabet
 a
 A
