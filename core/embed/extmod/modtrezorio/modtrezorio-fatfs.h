@@ -95,7 +95,7 @@ DSTATUS disk_status(BYTE pdrv) {
 
 DRESULT disk_read(BYTE pdrv, BYTE *buff, LBA_t sector, UINT count) {
   (void)pdrv;
-  if (sectrue == sdcard_read_blocks((uint32_t *)buff, sector, count)) {
+  if (ts_ok(sdcard_read_blocks((uint32_t *)buff, sector, count))) {
     return RES_OK;
   } else {
     return RES_ERROR;
