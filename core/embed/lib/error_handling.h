@@ -20,6 +20,8 @@
 #ifndef LIB_ERROR_HANDLING_H
 #define LIB_ERROR_HANDLING_H
 
+#include <stdint.h>
+
 // Suppresses the intellisense error in VSCode
 #ifndef __FILE_NAME__
 #define __FILE_NAME__ __FILE__
@@ -36,7 +38,7 @@ typedef struct {
 //
 // Status codes are hardened against fault injections
 // by storing the same value in the upper 16 bits.
-#define TS_BUILD(code) ((ts_t){(code) | ((code) << 16)})
+#define TS_BUILD(code) ((const ts_t){(code) | ((code) << 16)})
 
 // OK status code (signalling success or no error)
 #define TS_OK TS_BUILD(0)
@@ -59,22 +61,35 @@ typedef struct {
 #define TS_ERROR_ARG TS_ERROR_BUILD(4)
 #define TS_ERROR_IO TS_ERROR_BUILD(5)
 
+// Extracts the status code integer value.
+#define ts_code(status) ((status).code)
+
 // Check status code consistency and returns its value.
 // If invalid status code is detected, it will call `__fatal_error()`.
-#define _ts_checked(status)                                       \
-  ({                                                              \
-    ts_t _checked = (status);                                     \
-    if ((_checked.code & 0xFFFF) != (_checked.code >> 16)) {      \
-      __fatal_error("ts_check() error", __FILE_NAME__, __LINE__); \
-    }                                                             \
-    _checked;                                                     \
+#define _ts_checked(status)                                          \
+  ({                                                                 \
+    ts_t _checked = (status);                                        \
+    if ((ts_code(_checked) & 0xFFFF) != (ts_code(_checked) >> 16)) { \
+      __fatal_error("ts check error", __FILE_NAME__, __LINE__);      \
+    }                                                                \
+    _checked;                                                        \
   })
 
 // Returns `true` if status code is `TS_OK`
-#define ts_ok(status) (_ts_checked(status).code == TS_OK.code)
+#define ts_ok(status) (ts_code(_ts_checked(status)) == ts_code(TS_OK))
 
 // Returns `true` if status code is NOT `TS_OK`
-#define ts_error(status) (_ts_checked(status).code != TS_OK.code)
+#define ts_error(status) (ts_code(_ts_checked(status)) != ts_code(TS_OK))
+
+// Returns `true` if both status codes are equal
+#define ts_eq(status1, status2) (ts_code(status1) == ts_code(status2))
+
+// Returns a string representation of the status code.
+//
+// TS_OK -> "OK"
+// TS_ERROR -> "ERROR"
+// ...
+const char *ts_string(ts_t status);
 
 // ----------------------------------------------------
 // verify_init(), verify_status() and verify_xxx() macros define
