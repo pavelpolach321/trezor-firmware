@@ -434,8 +434,7 @@ static void test_sd(void) {
     for (int i = 0; i < BLOCK_SIZE / sizeof(uint32_t); i++) {
       buf1[i] ^= 0xFFFFFFFF;
     }
-    if (sectrue !=
-        sdcard_write_blocks(buf1, 0, BLOCK_SIZE / SDCARD_BLOCK_SIZE)) {
+    if (ts_error(sdcard_write_blocks(buf1, 0, BLOCK_SIZE / SDCARD_BLOCK_SIZE))) {
       vcp_println("ERROR sdcard_write_blocks (%d)", j);
       goto power_off;
     }

@@ -298,8 +298,6 @@ ts_t sdcard_read_blocks(uint32_t *dest, uint32_t block_num,
   // check that dest pointer is aligned on a 4-byte boundary
   verify_arg(((uint32_t)dest & 3) == 0);
 
-  HAL_StatusTypeDef hal_status = HAL_OK;
-
   sd_dma.Instance = DMA2_Stream3;
   sd_dma.State = HAL_DMA_STATE_RESET;
   sd_dma.Init.Channel = DMA_CHANNEL_4;
@@ -329,12 +327,12 @@ ts_t sdcard_read_blocks(uint32_t *dest, uint32_t block_num,
   svc_enableIRQ(DMA2_Stream3_IRQn);
 
   sdcard_reset_periph();
-  hal_status =
+  HAL_StatusTypeDef hal_status =
       HAL_SD_ReadBlocks_DMA(&sd_handle, (uint8_t *)dest, block_num, num_blocks);
   verify_hal_ok(hal_status);
 
-  hal_status = sdcard_wait_finished(&sd_handle, 5000);
-  verify_hal_ok(hal_status);
+  ts_t status = sdcard_wait_finished(&sd_handle, 5000);
+  verify_ok(status);
 
 error:
   svc_disableIRQ(DMA2_Stream3_IRQn);
@@ -353,8 +351,6 @@ ts_t sdcard_write_blocks(const uint32_t *src, uint32_t block_num,
 
   // check that src pointer is aligned on a 4-byte boundary
   verify_arg(((uint32_t)src & 3) == 0);
-
-  HAL_StatusTypeDef hal_status = HAL_OK;
 
   sd_dma.Instance = DMA2_Stream3;
   sd_dma.State = HAL_DMA_STATE_RESET;
@@ -385,12 +381,12 @@ ts_t sdcard_write_blocks(const uint32_t *src, uint32_t block_num,
   svc_enableIRQ(DMA2_Stream3_IRQn);
 
   sdcard_reset_periph();
-  hal_status =
+  HAL_StatusTypeDef hal_status =
       HAL_SD_WriteBlocks_DMA(&sd_handle, (uint8_t *)src, block_num, num_blocks);
   verify_hal_ok(hal_status);
 
-  hal_status = sdcard_wait_finished(&sd_handle, 5000);
-  verify_hal_ok(hal_status);
+  ts_t status = sdcard_wait_finished(&sd_handle, 5000);
+  verify_ok(status);
 
 error:
   svc_disableIRQ(DMA2_Stream3_IRQn);
