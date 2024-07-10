@@ -25,40 +25,56 @@
 #define __FILE_NAME__ __FILE__
 #endif
 
-// Build status code from any 16-bit value.
-// This macro is used for generic status codes.
-#define TS_BUILD(code) ((code) | (~(code) << 16))
-
-// Status codes
-//
-// Status code is hardened against fault injections
-// by storing the negated value in the upper 16 bits.
-typedef enum {
-  TS_OK = TS_BUILD(0),
-  TS_ERROR = TS_BUILD(1),          // Generic error
-  TS_ERROR_BUSY = TS_BUILD(2),     // Busy
-  TS_ERROR_TIMEOUT = TS_BUILD(3),  // Timeout
-  TS_ERROR_NOTINIT = TS_BUILD(4),  // Not initialized
-  TS_ERROR_ARG = TS_BUILD(4),      // Invalid argument
-  TS_ERROR_IO = TS_BUILD(5),       // I/O error
+// Status code type
+typedef struct {
+  // Do not access this field directly,
+  // use `ts_ok()` and `ts_error()` macros.
+  uint32_t code;
 } ts_t;
+
+// Build status code from any 16-bit value.
+//
+// Status codes are hardened against fault injections
+// by storing the same value in the upper 16 bits.
+#define TS_BUILD(code) ((ts_t){(code) | ((code) << 16)})
+
+// OK status code (signalling success or no error)
+#define TS_OK TS_BUILD(0)
+
+// This offset ensures at lest 16bit hamming distance
+// between `TS_OK` and other status codes.
+#define TS_ERROR_OFFSET 0xFF00
+
+// Build error status code from any 8-bit value
+//
+// The code should be in range 0 to 255 to ensure
+// 16-bit hamming distance to `TS_OK`
+#define TS_ERROR_BUILD(code) TS_BUILD(TS_ERROR_OFFSET + (code))
+
+// Error status codes
+#define TS_ERROR TS_ERROR_BUILD(0)
+#define TS_ERROR_BUSY TS_ERROR_BUILD(1)
+#define TS_ERROR_TIMEOUT TS_ERROR_BUILD(2)
+#define TS_ERROR_NOTINIT TS_ERROR_BUILD(3)
+#define TS_ERROR_ARG TS_ERROR_BUILD(4)
+#define TS_ERROR_IO TS_ERROR_BUILD(5)
 
 // Check status code consistency and returns its value.
 // If invalid status code is detected, it will call `__fatal_error()`.
 #define _ts_checked(status)                                       \
   ({                                                              \
-    ts_t _checked_status = (status);                              \
-    if ((_checked_status & 0xFFFF) != (~_checked_status >> 16)) { \
+    ts_t _checked = (status);                                     \
+    if ((_checked.code & 0xFFFF) != (_checked.code >> 16)) {      \
       __fatal_error("ts_check() error", __FILE_NAME__, __LINE__); \
     }                                                             \
-    _checked_status;                                              \
+    _checked;                                                     \
   })
 
 // Returns `true` if status code is `TS_OK`
-#define ts_ok(status) (_ts_checked(status) == TS_OK)
+#define ts_ok(status) (_ts_checked(status).code == TS_OK.code)
 
 // Returns `true` if status code is NOT `TS_OK`
-#define ts_error(status) (_ts_checked(status) != TS_OK)
+#define ts_error(status) (_ts_checked(status).code != TS_OK.code)
 
 // ----------------------------------------------------
 // verify_init(), verify_status() and verify_xxx() macros define
