@@ -153,9 +153,9 @@ void HAL_SD_MspDeInit(SD_HandleTypeDef *hsd) {
 }
 
 ts_t sdcard_power_on_unchecked(bool low_speed) {
-  verify_init();
+  TS_INIT;
 
-  verify(!sd_handle.Instance, TS_ERROR_BUSY);
+  TS_CHECK(!sd_handle.Instance, TS_ERROR_BUSY);
 
   // turn on SD card circuitry
   sdcard_active_pin_state();
@@ -171,7 +171,7 @@ ts_t sdcard_power_on_unchecked(bool low_speed) {
 
   // init the SD interface, with retry if it's not ready yet
   for (int retry = 10; HAL_SD_Init(&sd_handle) != HAL_OK; retry--) {
-    verify(retry > 0, TS_ERROR_IO);
+    TS_CHECK(retry > 0, TS_ERROR_IO);
     HAL_Delay(50);
   }
 
@@ -182,34 +182,34 @@ ts_t sdcard_power_on_unchecked(bool low_speed) {
   // the argument followed by CMD42 (SET_CLR_CARD_DETECT)
   sdmmc_status = SDMMC_CmdAppCommand(sd_handle.Instance,
                                      sd_handle.SdCard.RelCardAdd << 16U);
-  verify(sdmmc_status != SDMMC_ERROR_NONE, TS_ERROR_IO);
+  TS_CHECK(sdmmc_status != SDMMC_ERROR_NONE, TS_ERROR_IO);
 
   sdmmc_status = SDMMC_CmdSetClrCardDetect(sd_handle.Instance, 0);
-  verify(sdmmc_status != SDMMC_ERROR_NONE, TS_ERROR_IO);
+  TS_CHECK(sdmmc_status != SDMMC_ERROR_NONE, TS_ERROR_IO);
 
   HAL_StatusTypeDef hal_status;
 
   // configure the SD bus width for wide operation
   hal_status = HAL_SD_ConfigWideBusOperation(&sd_handle, SDMMC_BUS_WIDE_4B);
-  verify_hal_ok(hal_status);
+  TS_CHECK_HAL_OK(hal_status);
 
-  return verify_status();
+  TS_RETURN;
 
-error:
+cleanup:
   sdcard_power_off();
-  return verify_status();
+  TS_RETURN;
 }
 
 ts_t sdcard_power_on(void) {
-  verify_init();
+  TS_INIT;
 
-  verify_sec(sdcard_is_present(), TS_ERROR_IO);
+  TS_CHECK_SEC(sdcard_is_present(), TS_ERROR_IO);
 
   ts_t status = sdcard_power_on_unchecked(false);
-  verify_ok(status);
+  TS_CHECK_OK(status);
 
-error:
-  return verify_status();
+cleanup:
+  TS_RETURN;
 }
 
 void sdcard_power_off(void) {
@@ -292,46 +292,46 @@ static ts_t sdcard_wait_finished(SD_HandleTypeDef *sd, uint32_t timeout) {
 
 ts_t sdcard_read_blocks(uint32_t *dest, uint32_t block_num,
                         uint32_t num_blocks) {
-  verify_init();
+  TS_INIT;
 
   // check that SD card is initialised
-  verify(sd_handle.Instance == NULL, TS_ERROR_BUSY);
+  TS_CHECK(sd_handle.Instance == NULL, TS_ERROR_BUSY);
 
   // check that dest pointer is aligned on a 4-byte boundary
-  verify_arg(((uint32_t)dest & 3) == 0);
+  TS_CHECK_ARG(((uint32_t)dest & 3) == 0);
 
   sdcard_reset_periph();
 
   HAL_StatusTypeDef hal_status =
       HAL_SD_ReadBlocks_DMA(&sd_handle, (uint8_t *)dest, block_num, num_blocks);
-  verify_hal_ok(hal_status);
+  TS_CHECK_HAL_OK(hal_status);
 
   ts_t status = sdcard_wait_finished(&sd_handle, 5000);
-  verify_ok(status);
+  TS_CHECK_OK(status);
 
-error:
-  return verify_status();
+cleanup:
+  TS_RETURN;
 }
 
 ts_t sdcard_write_blocks(const uint32_t *src, uint32_t block_num,
                          uint32_t num_blocks) {
-  verify_init();
+  TS_INIT;
 
   // check that SD card is initialised
-  verify(sd_handle.Instance == NULL, TS_ERROR_BUSY);
+  TS_CHECK(sd_handle.Instance == NULL, TS_ERROR_BUSY);
 
   // check that src pointer is aligned on a 4-byte boundary
-  verify_arg(((uint32_t)src & 3) == 0);
+  TS_CHECK_ARG(((uint32_t)src & 3) == 0);
 
   sdcard_reset_periph();
 
   HAL_StatusTypeDef hal_status =
       HAL_SD_WriteBlocks_DMA(&sd_handle, (uint8_t *)src, block_num, num_blocks);
-  verify_hal_ok(hal_status);
+  TS_CHECK_HAL_OK(hal_status);
 
   ts_t status = sdcard_wait_finished(&sd_handle, 5000);
-  verify_ok(status);
+  TS_CHECK_OK(status);
 
-error:
-  return verify_status();
+cleanup:
+  TS_RETURN;
 }

@@ -104,32 +104,32 @@ uint64_t sdcard_get_capacity_in_bytes(void) {
 
 ts_t sdcard_read_blocks(uint32_t *dest, uint32_t block_num,
                         uint32_t num_blocks) {
-  verify_init();
+  TS_INIT;
 
-  verify_arg(block_num < SDCARD_BLOCKS);
-  verify_arg(num_blocks <= SDCARD_BLOCKS - block_num);
+  TS_CHECK_ARG(block_num < SDCARD_BLOCKS);
+  TS_CHECK_ARG(num_blocks <= SDCARD_BLOCKS - block_num);
 
-  verify_sec(sdcard_powered, TS_ERROR_NOTINIT);
+  TS_CHECK_SEC(sdcard_powered, TS_ERROR_NOTINIT);
 
   memcpy(dest, sdcard_buffer + block_num * SDCARD_BLOCK_SIZE,
          num_blocks * SDCARD_BLOCK_SIZE);
 
-error:
-  return verify_status();
+cleanup:
+  TS_RETURN;
 }
 
 ts_t sdcard_write_blocks(const uint32_t *src, uint32_t block_num,
                          uint32_t num_blocks) {
-  verify_init();
+  TS_INIT;
 
-  verify_arg(block_num < SDCARD_BLOCKS);
-  verify_arg(num_blocks <= SDCARD_BLOCKS - block_num);
+  TS_CHECK_ARG(block_num < SDCARD_BLOCKS);
+  TS_CHECK_ARG(num_blocks <= SDCARD_BLOCKS - block_num);
 
-  verify_sec(sdcard_powered, TS_ERROR_NOTINIT);
+  TS_CHECK_SEC(sdcard_powered, TS_ERROR_NOTINIT);
 
   memcpy(sdcard_buffer + block_num * SDCARD_BLOCK_SIZE, src,
          num_blocks * SDCARD_BLOCK_SIZE);
 
-error:
-  return verify_status();
+cleanup:
+  TS_RETURN;
 }
