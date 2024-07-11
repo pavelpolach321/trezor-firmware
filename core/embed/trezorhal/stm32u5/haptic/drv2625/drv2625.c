@@ -78,25 +78,25 @@ static haptic_driver_t g_haptic_driver = {
 };
 
 static ts_t drv2625_set_reg(uint8_t addr, uint8_t value) {
-  verify_init();
+  TS_INIT;
 
   uint8_t data[] = {addr, value};
 
   HAL_StatusTypeDef hal_status = i2c_transmit(
       DRV2625_I2C_INSTANCE, DRV2625_I2C_ADDRESS, data, sizeof(data), 1);
 
-  verify_hal_ok(hal_status);
+  TS_CHECK_HAL_OK(hal_status);
 
-error:
-  return verify_status();
+cleanup:
+  TS_RETURN;
 }
 
 ts_t haptic_init(void) {
-  verify_init();
+  TS_INIT;
 
   haptic_driver_t *driver = &g_haptic_driver;
 
-  verify(driver->initialized, TS_ERROR_NOTINIT);
+  TS_CHECK(driver->initialized, TS_ERROR_NOTINIT);
 
   memset(driver, 0, sizeof(haptic_driver_t));
 
@@ -105,27 +105,27 @@ ts_t haptic_init(void) {
   // select library
   status = drv2625_set_reg(DRV2625_REG_LIBRARY,
                            LIB_SEL | DRV2625_REG_LIBRARY_GAIN_25);
-  verify_ok(status);
+  TS_CHECK_OK(status);
 
   status =
       drv2625_set_reg(DRV2625_REG_LRAERM,
                       LRA_ERM_SEL | LOOP_SEL | DRV2625_REG_LRAERM_AUTO_BRK_OL);
-  verify_ok(status);
+  TS_CHECK_OK(status);
 
   status = drv2625_set_reg(DRV2625_REG_OD_CLAMP, ACTUATOR_OD_CLAMP);
-  verify_ok(status);
+  TS_CHECK_OK(status);
 
   status = drv2625_set_reg(DRV2625_REG_LRA_WAVE_SHAPE,
                            DRV2625_REG_LRA_WAVE_SHAPE_SINE);
-  verify_ok(status);
+  TS_CHECK_OK(status);
 
   status =
       drv2625_set_reg(DRV2625_REG_OL_LRA_PERIOD_LO, ACTUATOR_LRA_PERIOD & 0xFF);
-  verify_ok(status);
+  TS_CHECK_OK(status);
 
   status =
       drv2625_set_reg(DRV2625_REG_OL_LRA_PERIOD_HI, ACTUATOR_LRA_PERIOD >> 8);
-  verify_ok(status);
+  TS_CHECK_OK(status);
 
   GPIO_InitTypeDef GPIO_InitStructure = {0};
   GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
@@ -161,8 +161,8 @@ ts_t haptic_init(void) {
   driver->initialized = true;
   driver->enabled = true;
 
-error:
-  return verify_status();
+cleanup:
+  TS_RETURN;
 }
 
 void haptic_deinit(void) {
@@ -175,16 +175,16 @@ void haptic_deinit(void) {
 }
 
 ts_t haptic_set_enabled(bool enabled) {
-  verify_init();
+  TS_INIT;
 
   haptic_driver_t *driver = &g_haptic_driver;
 
-  verify(driver->initialized, TS_ERROR_NOTINIT);
+  TS_CHECK(driver->initialized, TS_ERROR_NOTINIT);
 
   driver->enabled = enabled;
 
-error:
-  return verify_status();
+cleanup:
+  TS_RETURN;
 }
 
 bool haptic_get_enabled(void) {
@@ -194,21 +194,21 @@ bool haptic_get_enabled(void) {
 }
 
 static ts_t haptic_play_rtp(int8_t amplitude, uint16_t duration_ms) {
-  verify_init();
+  TS_INIT;
 
   haptic_driver_t *driver = &g_haptic_driver;
 
-  verify(driver->initialized, TS_ERROR_NOTINIT);
+  TS_CHECK(driver->initialized, TS_ERROR_NOTINIT);
 
   if (!driver->playing_rtp) {
     ts_t status =
         drv2625_set_reg(DRV2625_REG_MODE,
                         DRV2625_REG_MODE_RTP | DRV2625_REG_MODE_TRGFUNC_ENABLE);
-    verify_ok(status);
+    TS_CHECK_OK(status);
     driver->playing_rtp = true;
   }
 
-  verify_ok(drv2625_set_reg(DRV2625_REG_RTP, (uint8_t)amplitude));
+  TS_CHECK_OK(drv2625_set_reg(DRV2625_REG_RTP, (uint8_t)amplitude));
 
   if (duration_ms > 6500) {
     duration_ms = 6500;
@@ -221,43 +221,43 @@ static ts_t haptic_play_rtp(int8_t amplitude, uint16_t duration_ms) {
     TIM16->CR1 |= TIM_CR1_CEN;
   }
 
-error:
-  return verify_status();
+cleanup:
+  TS_RETURN;
 }
 
 static ts_t haptic_play_lib(drv2625_lib_effect_t effect) {
-  verify_init();
+  TS_INIT;
 
   haptic_driver_t *driver = &g_haptic_driver;
 
-  verify(driver->initialized, TS_ERROR_NOTINIT);
+  TS_CHECK(driver->initialized, TS_ERROR_NOTINIT);
 
   driver->playing_rtp = false;
 
   ts_t status;
 
   status = drv2625_set_reg(DRV2625_REG_MODE, DRV2625_REG_MODE_WAVEFORM);
-  verify_ok(status);
+  TS_CHECK_OK(status);
 
   status = drv2625_set_reg(DRV2625_REG_WAVESEQ1, effect);
-  verify_ok(status);
+  TS_CHECK_OK(status);
 
   status = drv2625_set_reg(DRV2625_REG_WAVESEQ2, 0);
-  verify_ok(status);
+  TS_CHECK_OK(status);
 
   status = drv2625_set_reg(DRV2625_REG_GO, DRV2625_REG_GO_GO);
-  verify_ok(status);
+  TS_CHECK_OK(status);
 
-error:
-  return verify_status();
+cleanup:
+  TS_RETURN;
 }
 
 ts_t haptic_play(haptic_effect_t effect) {
-  verify_init();
+  TS_INIT;
 
   haptic_driver_t *driver = &g_haptic_driver;
 
-  verify(driver->initialized, TS_ERROR_NOTINIT);
+  TS_CHECK(driver->initialized, TS_ERROR_NOTINIT);
 
   if (driver->enabled) {
     ts_t status;
@@ -265,23 +265,23 @@ ts_t haptic_play(haptic_effect_t effect) {
     switch (effect) {
       case HAPTIC_BUTTON_PRESS:
         status = haptic_play_rtp(PRESS_EFFECT_AMPLITUDE, PRESS_EFFECT_DURATION);
-        verify_ok(status);
+        TS_CHECK_OK(status);
         break;
       case HAPTIC_HOLD_TO_CONFIRM:
         status = haptic_play_lib(DOUBLE_CLICK_60);
-        verify_ok(status);
+        TS_CHECK_OK(status);
         break;
       default:
         break;
     }
   }
 
-error:
-  return verify_status();
+cleanup:
+  TS_RETURN;
 }
 
 ts_t haptic_play_custom(int8_t amplitude_pct, uint16_t duration_ms) {
-  verify_init();
+  TS_INIT;
 
   if (amplitude_pct < 0) {
     amplitude_pct = 0;
@@ -291,18 +291,18 @@ ts_t haptic_play_custom(int8_t amplitude_pct, uint16_t duration_ms) {
 
   ts_t status = haptic_play_rtp((int8_t)((amplitude_pct * MAX_AMPLITUDE) / 100),
                                 duration_ms);
-  verify_ok(status);
+  TS_CHECK_OK(status);
 
-error:
-  return verify_status();
+cleanup:
+  TS_RETURN;
 }
 
 ts_t haptic_test(uint16_t duration_ms) {
-  verify_init();
+  TS_INIT;
 
   ts_t status = haptic_play_rtp(PRODTEST_EFFECT_AMPLITUDE, duration_ms);
-  verify_ok(status);
+  TS_CHECK_OK(status);
 
-error:
-  return verify_status();
+cleanup:
+  TS_RETURN;
 }
