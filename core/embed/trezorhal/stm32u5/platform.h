@@ -72,6 +72,6 @@ static inline ts_t hal_status_to_ts(HAL_StatusTypeDef hal_status) {
   }
 }
 
-#define verify_hal_ok(status) verify_ok(hal_status_to_ts(status))
+#define TS_CHECK_HAL_OK(status) TS_CHECK_OK(hal_status_to_ts(status))
 
 #endif  // TREZORHAL_PLATFORM_H
