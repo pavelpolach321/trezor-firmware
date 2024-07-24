@@ -1,12 +1,12 @@
 import builtins
-from micropython import const  # pyright: ignore[reportMissingModuleSource]
-from typing import TYPE_CHECKING  # pyright: ignore[reportShadowedImports]
+from micropython import const
+from typing import TYPE_CHECKING
 
 from storage.cache_common import DataCache
 from trezor import utils
 
 if TYPE_CHECKING:
-    from typing import TypeVar  # pyright: ignore[reportShadowedImports]
+    from typing import TypeVar
 
     T = TypeVar("T")
 
@@ -115,12 +115,6 @@ def initialize() -> None:
         session.clear()
 
 
-initialize()
-
-
-# THP vars
-_next_unauthenicated_session_index: int = 0  # TODO remove
-
 # First unauthenticated channel will have index 0
 _usage_counter = 0
 
@@ -148,6 +142,21 @@ def get_new_unauthenticated_channel(iface: bytes) -> ChannelCache:
     )
     _CHANNELS[index].iface[:] = bytearray(iface)
     return _CHANNELS[index]
+
+
+def update_channel_last_used(channel_id):
+    for channel in _CHANNELS:
+        if channel.channel_id == channel_id:
+            channel.last_usage = _get_usage_counter_and_increment()
+            return
+
+
+def update_session_last_used(channel_id, session_id):
+    for session in _SESSIONS:
+        if session.channel_id == channel_id and session.session_id == session_id:
+            session.last_usage = _get_usage_counter_and_increment()
+            update_channel_last_used(channel_id)
+            return
 
 
 def get_all_allocated_channels() -> list[ChannelCache]:
@@ -240,14 +249,10 @@ def _get_unallocated_session_index() -> int | None:
 
 
 def _get_channel_state(channel: ChannelCache) -> int:
-    if channel is None:
-        return _UNALLOCATED_STATE
     return int.from_bytes(channel.state, "big")
 
 
 def _get_session_state(session: SessionThpCache) -> int:
-    if session is None:
-        return _UNALLOCATED_STATE
     return int.from_bytes(session.state, "big")
 
 
