@@ -16,6 +16,7 @@ DISABLE_OPTIGA = ARGUMENTS.get('DISABLE_OPTIGA', '0') == '1'
 HW_REVISION = ARGUMENTS.get('HW_REVISION', None)
 THP = ARGUMENTS.get('THP', '0') == '1' # Trezor-Host Protocol
 NEW_RENDERING = ARGUMENTS.get('NEW_RENDERING', '1') == '1' or TREZOR_MODEL in ('T3T1',)
+BENCHMARK = ARGUMENTS.get('BENCHMARK', '0') == '1'
 
 
 FEATURE_FLAGS = {
@@ -753,6 +754,9 @@ if FROZEN:
         SOURCE_PY.extend(Glob(SOURCE_PY_DIR + 'apps/bitcoin/sign_tx/bitcoinlike.py'))
         SOURCE_PY.extend(Glob(SOURCE_PY_DIR + 'apps/bitcoin/sign_tx/zcash_v4.py'))
         SOURCE_PY.extend(Glob(SOURCE_PY_DIR + 'trezor/enums/Zcash*.py'))
+
+    if BENCHMARK:
+        SOURCE_PY.extend(Glob(SOURCE_PY_DIR + 'apps/benchmark/*.py'))
 
     source_mpy = env.FrozenModule(
         source=SOURCE_PY,
