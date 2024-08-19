@@ -1,13 +1,4 @@
-from trezor.crypto import aes, chacha20poly1305
-
-try:
-    from trezor.crypto import aesgcm
-
-    aes_gcm_imported = True
-except ImportError:
-    aes_gcm_imported = False
-
-
+from trezor.crypto import aes, aesgcm, chacha20poly1305
 from trezor.crypto.curve import curve25519, ed25519, nist256p1, secp256k1
 from trezor.crypto.hashlib import (
     blake2b,
@@ -70,6 +61,18 @@ benchmarks = {
     "crypto/cipher/aes128-ecb/decrypt": DecryptBenchmark(
         lambda: aes(aes.ECB, random_bytes(16), random_bytes(16)), 16
     ),
+    "crypto/cipher/aesgcm128/encrypt": EncryptBenchmark(
+        lambda: aesgcm(random_bytes(16), random_bytes(16)), 16
+    ),
+    "crypto/cipher/aesgcm128/decrypt": DecryptBenchmark(
+        lambda: aesgcm(random_bytes(16), random_bytes(16)), 16
+    ),
+    "crypto/cipher/aesgcm256/encrypt": EncryptBenchmark(
+        lambda: aesgcm(random_bytes(32), random_bytes(16)), 16
+    ),
+    "crypto/cipher/aesgcm256/decrypt": DecryptBenchmark(
+        lambda: aesgcm(random_bytes(32), random_bytes(16)), 16
+    ),
     "crypto/cipher/chacha20poly1305/encrypt": EncryptBenchmark(
         lambda: chacha20poly1305(random_bytes(32), random_bytes(12)), 64
     ),
@@ -90,20 +93,3 @@ benchmarks = {
     "crypto/curve/curve25519/publickey": PublickeyBenchmark(curve25519),
     "crypto/curve/curve25519/multiply": MultiplyBenchmark(curve25519),
 }
-
-if aes_gcm_imported:
-    aes_gcm_benchmarks = {
-        "crypto/cipher/aesgcm128/encrypt": EncryptBenchmark(
-            lambda: aesgcm(random_bytes(16), random_bytes(16)), 16
-        ),
-        "crypto/cipher/aesgcm128/decrypt": DecryptBenchmark(
-            lambda: aesgcm(random_bytes(16), random_bytes(16)), 16
-        ),
-        "crypto/cipher/aesgcm256/encrypt": EncryptBenchmark(
-            lambda: aesgcm(random_bytes(32), random_bytes(16)), 16
-        ),
-        "crypto/cipher/aesgcm256/decrypt": DecryptBenchmark(
-            lambda: aesgcm(random_bytes(32), random_bytes(16)), 16
-        ),
-    }
-    benchmarks.update(aes_gcm_benchmarks)
