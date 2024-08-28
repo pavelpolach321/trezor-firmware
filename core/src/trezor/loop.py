@@ -61,7 +61,13 @@ def schedule(
         deadline = utime.ticks_ms()
     if finalizer is not None:
         _finalizers[id(task)] = finalizer
-    _queue.push(deadline, task, value)
+    try:
+        _queue.push(deadline, task, value)
+    except Exception:
+        ttt = [0, 0, 0]
+        while _queue:
+            _queue.pop(ttt)
+            print(ttt)
 
 
 def pause(task: Task, iface: int) -> None:
