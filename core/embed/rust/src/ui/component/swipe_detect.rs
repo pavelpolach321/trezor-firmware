@@ -2,10 +2,10 @@ use crate::{
     time::{Duration, Instant},
     ui::{
         animation::Animation,
-        component::{Event, EventCtx, SwipeDirection},
+        component::{Event, EventCtx},
         constant::screen,
         event::TouchEvent,
-        geometry::{Axis, Offset, Point},
+        geometry::{Axis, Direction, Offset, Point},
         util::animation_disabled,
     },
 };
@@ -53,12 +53,12 @@ impl SwipeConfig {
         }
     }
 
-    pub fn with_swipe(mut self, dir: SwipeDirection, settings: SwipeSettings) -> Self {
+    pub fn with_swipe(mut self, dir: Direction, settings: SwipeSettings) -> Self {
         self[dir] = Some(settings);
         self
     }
 
-    pub fn is_allowed(&self, dir: SwipeDirection) -> bool {
+    pub fn is_allowed(&self, dir: Direction) -> bool {
         self[dir].is_some()
     }
 
@@ -66,16 +66,16 @@ impl SwipeConfig {
     /// direction.
     ///
     /// If the swipe direction is not allowed, this will return 0.
-    pub fn progress(&self, dir: SwipeDirection, movement: Offset, threshold: u16) -> u16 {
+    pub fn progress(&self, dir: Direction, movement: Offset, threshold: u16) -> u16 {
         if !self.is_allowed(dir) {
             return 0;
         }
 
         let correct_movement = match dir {
-            SwipeDirection::Right => movement.x > 0,
-            SwipeDirection::Left => movement.x < 0,
-            SwipeDirection::Down => movement.y > 0,
-            SwipeDirection::Up => movement.y < 0,
+            Direction::Right => movement.x > 0,
+            Direction::Left => movement.x < 0,
+            Direction::Down => movement.y > 0,
+            Direction::Up => movement.y < 0,
         };
 
         if !correct_movement {
@@ -85,14 +85,14 @@ impl SwipeConfig {
         let movement = movement.abs();
 
         match dir {
-            SwipeDirection::Right => (movement.x as u16).saturating_sub(threshold),
-            SwipeDirection::Left => (movement.x as u16).saturating_sub(threshold),
-            SwipeDirection::Down => (movement.y as u16).saturating_sub(threshold),
-            SwipeDirection::Up => (movement.y as u16).saturating_sub(threshold),
+            Direction::Right => (movement.x as u16).saturating_sub(threshold),
+            Direction::Left => (movement.x as u16).saturating_sub(threshold),
+            Direction::Down => (movement.y as u16).saturating_sub(threshold),
+            Direction::Up => (movement.y as u16).saturating_sub(threshold),
         }
     }
 
-    pub fn duration(&self, dir: SwipeDirection) -> Option<Duration> {
+    pub fn duration(&self, dir: Direction) -> Option<Duration> {
         self[dir].as_ref().map(|s| s.duration)
     }
 
@@ -130,19 +130,19 @@ impl SwipeConfig {
         }
     }
 
-    pub fn paging_event(&self, dir: SwipeDirection) -> i8 {
+    pub fn paging_event(&self, dir: Direction) -> i8 {
         if !self.is_allowed(dir) {
             return 0;
         }
         match self.page_axis {
             Some(Axis::Horizontal) => match dir {
-                SwipeDirection::Right => -1,
-                SwipeDirection::Left => 1,
+                Direction::Right => -1,
+                Direction::Left => 1,
                 _ => 0,
             },
             Some(Axis::Vertical) => match dir {
-                SwipeDirection::Down => -1,
-                SwipeDirection::Up => 1,
+                Direction::Down => -1,
+                Direction::Up => 1,
                 _ => 0,
             },
             None => 0,
@@ -150,40 +150,40 @@ impl SwipeConfig {
     }
 }
 
-impl core::ops::Index<SwipeDirection> for SwipeConfig {
+impl core::ops::Index<Direction> for SwipeConfig {
     type Output = Option<SwipeSettings>;
 
-    fn index(&self, index: SwipeDirection) -> &Self::Output {
+    fn index(&self, index: Direction) -> &Self::Output {
         match index {
-            SwipeDirection::Up => &self.up,
-            SwipeDirection::Down => &self.down,
-            SwipeDirection::Left => &self.left,
-            SwipeDirection::Right => &self.right,
+            Direction::Up => &self.up,
+            Direction::Down => &self.down,
+            Direction::Left => &self.left,
+            Direction::Right => &self.right,
         }
     }
 }
 
-impl core::ops::IndexMut<SwipeDirection> for SwipeConfig {
-    fn index_mut(&mut self, index: SwipeDirection) -> &mut Self::Output {
+impl core::ops::IndexMut<Direction> for SwipeConfig {
+    fn index_mut(&mut self, index: Direction) -> &mut Self::Output {
         match index {
-            SwipeDirection::Up => &mut self.up,
-            SwipeDirection::Down => &mut self.down,
-            SwipeDirection::Left => &mut self.left,
-            SwipeDirection::Right => &mut self.right,
+            Direction::Up => &mut self.up,
+            Direction::Down => &mut self.down,
+            Direction::Left => &mut self.left,
+            Direction::Right => &mut self.right,
         }
     }
 }
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub enum SwipeDetectMsg {
-    Start(SwipeDirection),
-    Move(SwipeDirection, u16),
-    Trigger(SwipeDirection),
+    Start(Direction),
+    Move(Direction, u16),
+    Trigger(Direction),
 }
 
 pub struct SwipeDetect {
     origin: Option<Point>,
-    locked: Option<SwipeDirection>,
+    locked: Option<Direction>,
     final_animation: Option<Animation<i16>>,
     moved: u16,
 }
@@ -210,25 +210,25 @@ impl SwipeDetect {
         }
     }
 
-    fn min_lock(&self, dir: SwipeDirection) -> u16 {
+    fn min_lock(&self, dir: Direction) -> u16 {
         match dir {
-            SwipeDirection::Up | SwipeDirection::Down => Self::MIN_LOCK as u16,
-            SwipeDirection::Left | SwipeDirection::Right => {
+            Direction::Up | Direction::Down => Self::MIN_LOCK as u16,
+            Direction::Left | Direction::Right => {
                 (Self::MIN_LOCK * Self::VERTICAL_PREFERENCE) as u16
             }
         }
     }
 
-    fn min_trigger(&self, dir: SwipeDirection) -> u16 {
+    fn min_trigger(&self, dir: Direction) -> u16 {
         match dir {
-            SwipeDirection::Up | SwipeDirection::Down => Self::MIN_TRIGGER as u16,
-            SwipeDirection::Left | SwipeDirection::Right => {
+            Direction::Up | Direction::Down => Self::MIN_TRIGGER as u16,
+            Direction::Left | Direction::Right => {
                 (Self::MIN_TRIGGER * Self::VERTICAL_PREFERENCE) as u16
             }
         }
     }
 
-    fn is_lockable(&self, dir: SwipeDirection) -> bool {
+    fn is_lockable(&self, dir: Direction) -> bool {
         let Some(origin) = self.origin else {
             return false;
         };
@@ -236,10 +236,10 @@ impl SwipeDetect {
         let min_distance = self.min_trigger(dir) as i16;
 
         match dir {
-            SwipeDirection::Up => origin.y > min_distance,
-            SwipeDirection::Down => origin.y < (screen().height() - min_distance),
-            SwipeDirection::Left => origin.x > min_distance,
-            SwipeDirection::Right => origin.x < (screen().width() - min_distance),
+            Direction::Up => origin.y > min_distance,
+            Direction::Down => origin.y < (screen().height() - min_distance),
+            Direction::Left => origin.x > min_distance,
+            Direction::Right => origin.x < (screen().width() - min_distance),
         }
     }
 
@@ -287,7 +287,7 @@ impl SwipeDetect {
         None
     }
 
-    pub fn trigger(&mut self, ctx: &mut EventCtx, dir: SwipeDirection, config: SwipeConfig) {
+    pub fn trigger(&mut self, ctx: &mut EventCtx, dir: Direction, config: SwipeConfig) {
         ctx.request_anim_frame();
         ctx.request_paint();
 
@@ -340,7 +340,7 @@ impl SwipeDetect {
                         }
                         None => {
                             let mut res = None;
-                            for dir in SwipeDirection::iter() {
+                            for dir in Direction::iter() {
                                 let progress = config.progress(dir, ofs, self.min_lock(dir));
                                 if progress > 0 && self.is_lockable(dir) {
                                     self.locked = Some(dir);
