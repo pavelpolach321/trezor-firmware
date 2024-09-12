@@ -1,0 +1,17 @@
+name: 'Upload coverage data'
+inputs:
+  full-deps:
+    description: 'Pass --arg fullDeps true to nix-shell?'
+    required: false
+    default: false
+runs:
+  using: "composite"
+  steps:
+    - run: mv core/src/.coverage core/src/.coverage.${{ github.job }} || true
+      shell: sh
+    - uses: actions/upload-artifact@v4
+      with:
+        name: core-coverage-${{ matrix.model }}-${{ github.job }}-${{ strategy.job-index }}
+        path: core/src/.coverage.*
+        retention-days: 7
+        include-hidden-files: true
