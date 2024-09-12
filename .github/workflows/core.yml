@@ -284,6 +284,7 @@ jobs:
         continue-on-error: true
       - uses: ./.github/actions/ui-comment
         if: ${{ failure() && env.ACTIONS_DO_UI_TEST == 'true' }}
+      - run: find . -name "*coverage*"
       - uses: actions/upload-artifact@v4
         with:
           name: core-coverage-${{ matrix.model }}-${{ matrix.lang }}-${{ github.job }}-${{ strategy.job-index }}
@@ -608,6 +609,7 @@ jobs:
           retention-days: 7
         if: always()
       - run: mv core/src/.coverage core/.coverage.test_emu_u2f || true
+      - run: find . -name "*coverage*"
       - uses: actions/upload-artifact@v4
         with:
           name: core-coverage-${{ matrix.model }}-${{ github.job }}-${{ strategy.job-index }}
@@ -648,6 +650,7 @@ jobs:
           retention-days: 7
         if: always()
       - run: mv core/src/.coverage core/.coverage.test_emu_fido2 || true
+      - run: find . -name "*coverage*"
       - uses: actions/upload-artifact@v4
         with:
           name: core-coverage-${{ matrix.model }}-${{ github.job }}-${{ strategy.job-index }}
