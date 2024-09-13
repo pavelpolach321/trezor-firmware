@@ -1,6 +1,5 @@
 use crate::{
     error,
-    micropython::{iter::IterBuf, map::Map, obj::Obj, qstr::Qstr, util},
     strutil::TString,
     translations::TR,
     ui::{
@@ -16,8 +15,7 @@ use crate::{
         flow::{
             base::{DecisionBuilder as _, StateChange},
             FlowMsg, FlowState, SwipeFlow, SwipePage,
-        },
-        layout::{obj::LayoutObj, util::RecoveryType},
+        }, layout::util::RecoveryType,
     },
 };
 
@@ -142,10 +140,6 @@ impl FlowState for ContinueRecoveryBetweenSharesAdvanced {
     }
 }
 
-#[allow(clippy::not_unsafe_ptr_arg_deref)]
-pub extern "C" fn new_continue_recovery(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, new_obj) }
-}
 fn footer_update_fn(
     content: &SwipeContent<SwipePage<Paragraphs<ParagraphVecLong>>>,
     ctx: &mut EventCtx,
@@ -158,24 +152,13 @@ fn footer_update_fn(
     footer.update_page_counter(ctx, current_page, Some(total_pages));
 }
 
-fn new_obj(_args: &[Obj], kwargs: &Map) -> Result<Obj, error::Error> {
-    let first_screen: bool = kwargs.get(Qstr::MP_QSTR_first_screen)?.try_into()?;
-    let recovery_type: RecoveryType = kwargs.get(Qstr::MP_QSTR_recovery_type)?.try_into()?;
-    let text: TString = kwargs.get(Qstr::MP_QSTR_text)?.try_into()?; // #shares entered
-    let subtext: Option<TString> = kwargs.get(Qstr::MP_QSTR_subtext)?.try_into_option()?; // #shares remaining
-    let pages: Option<Obj> = kwargs.get(Qstr::MP_QSTR_pages)?.try_into_option()?; // info about remaining shares
-
-    let mut pars_show_shares = ParagraphVecLong::new();
-    if let Some(pages) = pages {
-        let pages_iterable: Obj = pages;
-        for page in IterBuf::new().try_iterate(pages_iterable)? {
-            let [title, description]: [TString; 2] = util::iter_into_array(page)?;
-            pars_show_shares
-                .add(Paragraph::new(&theme::TEXT_SUB_GREY, title))
-                .add(Paragraph::new(&theme::TEXT_MONO_GREY_LIGHT, description).break_after());
-        }
-    }
-
+pub fn new_continue_recovery(
+    first_screen: bool,
+    recovery_type: RecoveryType,
+    text: TString<'static>,
+    subtext: Option<TString<'static>>,
+    pages: Option<ParagraphVecLong<'static>>,  // FIXME: Lifetime
+) -> Result<SwipeFlow, error::Error> {
     let (title, cancel_btn, cancel_title, cancel_intro) = match recovery_type {
         RecoveryType::Normal => (
             TR::recovery__title,
@@ -276,7 +259,7 @@ fn new_obj(_args: &[Obj], kwargs: &Map) -> Result<Obj, error::Error> {
         SwipeFlow::new(&ContinueRecoveryBeforeShares::Main)?
             .with_page(&ContinueRecoveryBeforeShares::Main, content_main)?
             .with_page(&ContinueRecoveryBeforeShares::Menu, content_menu)?
-    } else if pars_show_shares.is_empty() {
+    } else if pages.is_none() {
         let content_menu = Frame::left_aligned(
             TString::empty(),
             VerticalMenu::empty().danger(theme::ICON_CANCEL, cancel_btn.into()),
@@ -320,10 +303,10 @@ fn new_obj(_args: &[Obj], kwargs: &Map) -> Result<Obj, error::Error> {
             TR::instructions__swipe_up.into(),
             TR::recovery__more_shares_needed.into(),
         );
-        let n_remaining_shares = pars_show_shares.len() / 2;
+        let n_remaining_shares = pages.as_ref().unwrap().len() / 2;
         let content_remaining_shares = Frame::left_aligned(
             TR::recovery__title_remaining_shares.into(),
-            SwipeContent::new(SwipePage::vertical(pars_show_shares.into_paragraphs())),
+            SwipeContent::new(SwipePage::vertical(pages.unwrap().into_paragraphs())),
         )
         .with_cancel_button()
         .with_footer_page_hint(
@@ -359,5 +342,5 @@ fn new_obj(_args: &[Obj], kwargs: &Map) -> Result<Obj, error::Error> {
                 content_remaining_shares,
             )?
     };
-    Ok(LayoutObj::new(res)?.into())
+    Ok(res)
 }
