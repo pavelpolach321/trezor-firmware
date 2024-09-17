@@ -546,8 +546,8 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x0cR\x03mac:\x04\x98\xb2\x19\x01\"\xa8\x01\n\x1eThpAuthenticatedCredent\
     ialData\x12,\n\x12host_static_pubkey\x18\x01\x20\x01(\x0cR\x10hostStatic\
     Pubkey\x12R\n\rcred_metadata\x18\x02\x20\x01(\x0b2-.hw.trezor.messages.t\
-    hp.ThpCredentialMetadataR\x0ccredMetadata:\x04\x98\xb2\x19\x01B7\n#com.s\
-    atoshilabs.trezor.lib.protobufB\x10TrezorMessageThp\
+    hp.ThpCredentialMetadataR\x0ccredMetadata:\x04\x98\xb2\x19\x01B;\n#com.s\
+    atoshilabs.trezor.lib.protobufB\x10TrezorMessageThp\x80\xa6\x1d\x01\
 ";
 
 /// `FileDescriptorProto` object which was a source for this generated file
