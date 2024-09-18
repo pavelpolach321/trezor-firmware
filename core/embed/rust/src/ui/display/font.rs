@@ -142,25 +142,25 @@ impl Glyph {
     }
 }
 
-/// Font constants. Keep in sync with FONT_ definitions in
-/// `core/embed/lib/fonts/fonts.h`.
+/// Font constants. Keep in sync with `font_id_t` definition in
+/// `core/embed/lib/fonts/fonts_types.h`.
 #[derive(Copy, Clone, PartialEq, Eq, FromPrimitive)]
 #[repr(u8)]
 #[allow(non_camel_case_types)]
 pub enum Font {
-    NORMAL = 1,
-    BOLD = 2,
-    MONO = 3,
-    BIG = 4,
-    DEMIBOLD = 5,
-    NORMAL_UPPER = 6,
-    BOLD_UPPER = 7,
-    SUB = 8,
+    NORMAL = 0,
+    NORMAL_UPPER,
+    BOLD,
+    BOLD_UPPER,
+    DEMIBOLD,
+    MONO,
+    BIG,
+    SUB,
 }
 
 impl From<Font> for i32 {
     fn from(font: Font) -> i32 {
-        -(font as i32)
+        font as i32
     }
 }
 

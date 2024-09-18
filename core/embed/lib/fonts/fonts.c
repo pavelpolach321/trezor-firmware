@@ -22,124 +22,145 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
+#include "fonts_types.h"
 #ifdef TRANSLATIONS
 #include "librust_fonts.h"
 #endif
 
-#define UNICODE_BADCHAR 0xFFFD
-
-int font_height(int font) {
-  switch (font) {
+// include selectively based on the SCons variables
 #ifdef TREZOR_FONT_NORMAL_ENABLE
-    case FONT_NORMAL:
-      return FONT_NORMAL_HEIGHT;
+#include TREZOR_FONT_NORMAL_INCLUDE
 #endif
 #ifdef TREZOR_FONT_DEMIBOLD_ENABLE
-    case FONT_DEMIBOLD:
-      return FONT_DEMIBOLD_HEIGHT;
+#include TREZOR_FONT_DEMIBOLD_INCLUDE
 #endif
 #ifdef TREZOR_FONT_BOLD_ENABLE
-    case FONT_BOLD:
-      return FONT_BOLD_HEIGHT;
+#include TREZOR_FONT_BOLD_INCLUDE
 #endif
 #ifdef TREZOR_FONT_NORMAL_UPPER_ENABLE
-    case FONT_NORMAL_UPPER:
-      return FONT_NORMAL_UPPER_HEIGHT;
+#include TREZOR_FONT_NORMAL_UPPER_INCLUDE
 #endif
 #ifdef TREZOR_FONT_BOLD_UPPER_ENABLE
-    case FONT_BOLD_UPPER:
-      return FONT_BOLD_UPPER_HEIGHT;
+#include TREZOR_FONT_BOLD_UPPER_INCLUDE
 #endif
 #ifdef TREZOR_FONT_MONO_ENABLE
-    case FONT_MONO:
-      return FONT_MONO_HEIGHT;
+#include TREZOR_FONT_MONO_INCLUDE
 #endif
 #ifdef TREZOR_FONT_BIG_ENABLE
-    case FONT_BIG:
-      return FONT_BIG_HEIGHT;
+#include TREZOR_FONT_BIG_INCLUDE
 #endif
 #ifdef TREZOR_FONT_SUB_ENABLE
-    case FONT_SUB:
-      return FONT_SUB_HEIGHT;
+#include TREZOR_FONT_SUB_INCLUDE
 #endif
+
+#define PASTER(font_name) font_name##_info
+#define FONT_INFO(font_name) PASTER(font_name)
+
+static const font_info_t *const font_registry[FONTS_COUNT] = {
+#ifdef TREZOR_FONT_NORMAL_ENABLE
+    [FONT_NORMAL] = &FONT_INFO(TREZOR_FONT_NORMAL_NAME),
+#else
+    [FONT_NORMAL] = NULL,
+#endif
+#ifdef TREZOR_FONT_BOLD_ENABLE
+    [FONT_BOLD] = &FONT_INFO(TREZOR_FONT_BOLD_NAME),
+#else
+    [FONT_BOLD] = NULL,
+#endif
+#ifdef TREZOR_FONT_DEMIBOLD_ENABLE
+    [FONT_DEMIBOLD] = &FONT_INFO(TREZOR_FONT_DEMIBOLD_NAME),
+#else
+    [FONT_DEMIBOLD] = NULL,
+#endif
+#ifdef TREZOR_FONT_MONO_ENABLE
+    [FONT_MONO] = &FONT_INFO(TREZOR_FONT_MONO_NAME),
+#else
+    [FONT_MONO] = NULL,
+#endif
+#ifdef TREZOR_FONT_BIG_ENABLE
+    [FONT_BIG] = &FONT_INFO(TREZOR_FONT_BIG_NAME),
+#else
+    [FONT_BIG] = NULL,
+#endif
+#ifdef TREZOR_FONT_NORMAL_UPPER_ENABLE
+    [FONT_NORMAL_UPPER] = &FONT_INFO(TREZOR_FONT_NORMAL_UPPER_NAME),
+#else
+    [FONT_NORMAL_UPPER] = NULL,
+#endif
+#ifdef TREZOR_FONT_BOLD_UPPER_ENABLE
+    [FONT_BOLD_UPPER] = &FONT_INFO(TREZOR_FONT_BOLD_UPPER_NAME),
+#else
+    [FONT_BOLD_UPPER] = NULL,
+#endif
+#ifdef TREZOR_FONT_SUB_ENABLE
+    [FONT_SUB] = &FONT_INFO(TREZOR_FONT_SUB_NAME),
+#else
+    [FONT_SUB] = NULL,
+#endif
+};
+
+const font_info_t *get_font_info(font_id_t font_id) {
+  if (font_id < 0 || font_id >= FONTS_COUNT) {
+    return NULL;
   }
-  return 0;
+  return font_registry[font_id];
+}
+
+int font_height(int font) {
+  const font_info_t *font_info = get_font_info(font);
+  if (font_info == NULL) {
+    return 0;
+  }
+  return font_info->height;
 }
 
 int font_max_height(int font) {
-  switch (font) {
-#ifdef TREZOR_FONT_NORMAL_ENABLE
-    case FONT_NORMAL:
-      return FONT_NORMAL_MAX_HEIGHT;
-#endif
-#ifdef TREZOR_FONT_DEMIBOLD_ENABLE
-    case FONT_DEMIBOLD:
-      return FONT_DEMIBOLD_MAX_HEIGHT;
-#endif
-#ifdef TREZOR_FONT_BOLD_ENABLE
-    case FONT_BOLD:
-      return FONT_BOLD_MAX_HEIGHT;
-#endif
-#ifdef TREZOR_FONT_NORMAL_UPPER_ENABLE
-    case FONT_NORMAL_UPPER:
-      return FONT_NORMAL_UPPER_MAX_HEIGHT;
-#endif
-#ifdef TREZOR_FONT_BOLD_UPPER_ENABLE
-    case FONT_BOLD_UPPER:
-      return FONT_BOLD_UPPER_MAX_HEIGHT;
-#endif
-#ifdef TREZOR_FONT_MONO_ENABLE
-    case FONT_MONO:
-      return FONT_MONO_MAX_HEIGHT;
-#endif
-#ifdef TREZOR_FONT_BIG_ENABLE
-    case FONT_BIG:
-      return FONT_BIG_MAX_HEIGHT;
-#endif
-#ifdef TREZOR_FONT_SUB_ENABLE
-    case FONT_SUB:
-      return FONT_SUB_MAX_HEIGHT;
-#endif
+  const font_info_t *font_info = get_font_info(font);
+  if (font_info == NULL) {
+    return 0;
   }
-  return 0;
+  return font_info->max_height;
 }
 
 int font_baseline(int font) {
-  switch (font) {
-#ifdef TREZOR_FONT_NORMAL_ENABLE
-    case FONT_NORMAL:
-      return FONT_NORMAL_BASELINE;
-#endif
-#ifdef TREZOR_FONT_DEMIBOLD_ENABLE
-    case FONT_DEMIBOLD:
-      return FONT_DEMIBOLD_BASELINE;
-#endif
-#ifdef TREZOR_FONT_BOLD_ENABLE
-    case FONT_BOLD:
-      return FONT_BOLD_BASELINE;
-#endif
-#ifdef TREZOR_FONT_NORMAL_UPPER_ENABLE
-    case FONT_NORMAL_UPPER:
-      return FONT_NORMAL_UPPER_BASELINE;
-#endif
-#ifdef TREZOR_FONT_BOLD_UPPER_ENABLE
-    case FONT_BOLD_UPPER:
-      return FONT_BOLD_UPPER_BASELINE;
-#endif
-#ifdef TREZOR_FONT_MONO_ENABLE
-    case FONT_MONO:
-      return FONT_MONO_BASELINE;
-#endif
-#ifdef TREZOR_FONT_BIG_ENABLE
-    case FONT_BIG:
-      return FONT_BIG_BASELINE;
-#endif
-#ifdef TREZOR_FONT_SUB_ENABLE
-    case FONT_SUB:
-      return FONT_SUB_BASELINE;
-#endif
+  const font_info_t *font_info = get_font_info(font);
+  if (font_info == NULL) {
+    return 0;
   }
-  return 0;
+  return font_info->baseline;
+}
+
+const uint8_t *font_get_glyph(int font, uint16_t c) {
+#ifdef TRANSLATIONS
+  // found UTF8 character
+  // it is not hardcoded in firmware fonts, it must be extracted from the
+  // embedded blob
+  if (c >= 0x7F) {
+    const uint8_t *g = get_utf8_glyph(c, font);
+    if (g != NULL) {
+      return g;
+    }
+  }
+#endif
+
+  // printable ASCII character
+  if (c >= ' ' && c < 0x7F) {
+    const font_info_t *font_info = get_font_info(font);
+    if (font_info == NULL) {
+      return NULL;
+    }
+    return font_info->glyph_data[c - ' '];
+  }
+
+  return font_nonprintable_glyph(font);
+}
+
+const uint8_t *font_nonprintable_glyph(int font) {
+  const font_info_t *font_info = get_font_info(font);
+  if (font_info == NULL) {
+    return NULL;
+  }
+  return font_info->glyph_nonprintable;
 }
 
 font_glyph_iter_t font_glyph_iter_init(const int font, const uint8_t *text,
@@ -151,6 +172,7 @@ font_glyph_iter_t font_glyph_iter_init(const int font, const uint8_t *text,
   };
 }
 
+#define UNICODE_BADCHAR 0xFFFD
 #define IS_UTF8_CONTINUE(c) (((c) & 0b11000000) == 0b10000000)
 
 static uint16_t next_utf8_codepoint(font_glyph_iter_t *iter) {
@@ -209,103 +231,6 @@ bool font_next_glyph(font_glyph_iter_t *iter, const uint8_t **out) {
   } else {
     return true;
   }
-}
-
-const uint8_t *font_nonprintable_glyph(int font) {
-#define PASTER(s) s##_glyph_nonprintable
-#define NONPRINTABLE_GLYPH(s) PASTER(s)
-
-  switch (font) {
-#ifdef TREZOR_FONT_NORMAL_ENABLE
-    case FONT_NORMAL:
-      return NONPRINTABLE_GLYPH(FONT_NORMAL_DATA);
-#endif
-#ifdef TREZOR_FONT_DEMIBOLD_ENABLE
-    case FONT_DEMIBOLD:
-      return NONPRINTABLE_GLYPH(FONT_DEMIBOLD_DATA);
-#endif
-#ifdef TREZOR_FONT_BOLD_ENABLE
-    case FONT_BOLD:
-      return NONPRINTABLE_GLYPH(FONT_BOLD_DATA);
-#endif
-#ifdef TREZOR_FONT_NORMAL_UPPER_ENABLE
-    case FONT_NORMAL_UPPER:
-      return NONPRINTABLE_GLYPH(FONT_NORMAL_UPPER_DATA);
-#endif
-#ifdef TREZOR_FONT_BOLD_UPPER_ENABLE
-    case FONT_BOLD_UPPER:
-      return NONPRINTABLE_GLYPH(FONT_BOLD_UPPER_DATA);
-#endif
-#ifdef TREZOR_FONT_MONO_ENABLE
-    case FONT_MONO:
-      return NONPRINTABLE_GLYPH(FONT_MONO_DATA);
-#endif
-#ifdef TREZOR_FONT_BIG_ENABLE
-    case FONT_BIG:
-      return NONPRINTABLE_GLYPH(FONT_BIG_DATA);
-#endif
-#ifdef TREZOR_FONT_SUB_ENABLE
-    case FONT_SUB:
-      return NONPRINTABLE_GLYPH(FONT_SUB_DATA);
-#endif
-    default:
-      return NULL;
-  }
-}
-
-const uint8_t *font_get_glyph(int font, uint16_t c) {
-#ifdef TRANSLATIONS
-  // found UTF8 character
-  // it is not hardcoded in firmware fonts, it must be extracted from the
-  // embedded blob
-  if (c >= 0x7F) {
-    const uint8_t *g = get_utf8_glyph(c, font);
-    if (g != NULL) {
-      return g;
-    }
-  }
-#endif
-
-  // printable ASCII character
-  if (c >= ' ' && c < 0x7F) {
-    switch (font) {
-#ifdef TREZOR_FONT_NORMAL_ENABLE
-      case FONT_NORMAL:
-        return FONT_NORMAL_DATA[c - ' '];
-#endif
-#ifdef TREZOR_FONT_DEMIBOLD_ENABLE
-      case FONT_DEMIBOLD:
-        return FONT_DEMIBOLD_DATA[c - ' '];
-#endif
-#ifdef TREZOR_FONT_BOLD_ENABLE
-      case FONT_BOLD:
-        return FONT_BOLD_DATA[c - ' '];
-#endif
-#ifdef TREZOR_FONT_NORMAL_UPPER_ENABLE
-      case FONT_NORMAL_UPPER:
-        return FONT_NORMAL_UPPER_DATA[c - ' '];
-#endif
-#ifdef TREZOR_FONT_BOLD_UPPER_ENABLE
-      case FONT_BOLD_UPPER:
-        return FONT_BOLD_UPPER_DATA[c - ' '];
-#endif
-#ifdef TREZOR_FONT_MONO_ENABLE
-      case FONT_MONO:
-        return FONT_MONO_DATA[c - ' '];
-#endif
-#ifdef TREZOR_FONT_BIG_ENABLE
-      case FONT_BIG:
-        return FONT_BIG_DATA[c - ' '];
-#endif
-#ifdef TREZOR_FONT_SUB_ENABLE
-      case FONT_SUB:
-        return FONT_SUB_DATA[c - ' '];
-#endif
-    }
-    return 0;
-  }
-
-  return font_nonprintable_glyph(font);
 }
 
 // compute the width of the text (in pixels)
